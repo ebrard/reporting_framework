@@ -70,8 +70,6 @@ my_report.separator = ','
 report_id = cdb.persist_report(my_report, conn)
 
 # Persist execution test
-# To-do
-
 this_execution = Execution(execution_date=datetime.datetime.now(), execution_mode=my_report.mode)
 
 cdb.persist_execution(this_execution, report_id, conn)

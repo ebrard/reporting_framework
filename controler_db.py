@@ -140,10 +140,10 @@ def persist_execution(execution, report_id, conn):
               )
     execution_id = c.lastrowid
 
-    if len(execution.records) > 0 :
+    if len(execution.records) > 0:
         persist_records(execution.records, execution_id, conn)
 
-    if len(execution.generated_records) > 0 :
+    if len(execution.generated_records) > 0:
         persist_records(execution.generated_records, execution_id, conn)
 
     conn.commit()

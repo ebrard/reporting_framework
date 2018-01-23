@@ -43,8 +43,8 @@ def generate_delta(report):
                     row.append_column("crud type", "U")
                     row.record_type = 'framework'
                     last_report.generated_records.append(row)
-
                     print(row.to_string())
+
                 else:
                     row.append_column("crud type", "S")
                     row.record_type = 'framework'
