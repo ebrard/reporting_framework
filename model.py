@@ -9,7 +9,7 @@ class Report(object):
         self.name = name
         self.query = query
         self.mode = mode
-        self.columns = []
+        self.columns = []  # This is an issue for persistence (ok fixed in sql model)
         self.columns_mapping = {}
         self.execution = []
         self.separator = separator
@@ -26,11 +26,29 @@ class Report(object):
         last_execution, last_execution_n_1 = self.get_last_report_pairs()
 
         # Display header
-        print( self.separator.join( self.columns ) )
+        print(self.separator.join(self.columns))
         # Display content
         for record in last_execution.records:
             if record:
-                print( self.separator.join( [ column.value for column in record.columns if column] ) )
+                print(self.separator.join([column.value for column in record.columns if column]))
+
+    def write_to_file(self):
+        f = open(self.file_name, 'w')
+        # To do
+        print("Writing last execution to "+self.file_name)
+        # Get the last execution self.execution[-1]
+
+        # Write headers (business column) with the separator
+        columns_for_writing = [self.columns_mapping[col] for col in self.columns]
+        columns_for_writing.append('crud type')
+        f.write(self.separator.join(columns_for_writing)+'\n')
+
+        # Write data with the separator
+        for row in self.execution[-1].generated_records:
+            f.write(row.to_string(self.separator)+'\n')
+
+        f.close()
+        return None
 
 
 class Execution(object):
@@ -41,7 +59,7 @@ class Execution(object):
         self.execution_type = execution_type
         self.execution_mode = execution_mode
 
-        self.records = [records]  # This holds the record from the data source
+        self.records = []  # This holds the record from the data source
         self.generated_records = []  # This holds the record from the delta execution, if full then equals
 
     def get_record_with_id(self, record_id):
@@ -72,6 +90,7 @@ class Record(object):
         self.id = id
         self.record_hash = ''
         self.columns = []
+        self.record_type = ''
 
         if Column:
             self.columns.append(Column)
@@ -82,10 +101,17 @@ class Record(object):
         if mode == 'slow':
             for column in self.columns:
                 for a_record_column in a_record.columns:
-
                     if a_record_column.name == column.name:
                         if not a_record_column.is_equals(column):
                             is_equals = False
+                            print("Record with id: "
+                                  + self.id
+                                  + " "
+                                  + column.name
+                                  + " changed value from "
+                                  + a_record_column.value
+                                  + " to "
+                                  + column.value)
         else:
             if self.record_hash != a_record.record_hash:
                 is_equals = False
@@ -97,8 +123,8 @@ class Record(object):
             if column:
                 print(column.name+" : "+column.value)
 
-    def to_string(self):
-        return ','.join([column.value for column in self.columns])
+    def to_string(self, separator = ','):
+        return separator.join([column.value for column in self.columns])
 
     def hash_record(self):
         column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
