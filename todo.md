@@ -14,9 +14,9 @@
 
 # Persistence
 
-- Write script to create tables
-- Implement controler_db.py
-- Design db.sql
+- Write script to create tables [O]
+- Implement controler_db.py [O]
+- Design db.sql [O]
 
 # Main program
 
@@ -24,4 +24,4 @@
 
 # Open points
 
-- Persistence issue with columns or report (this is a different type, need a new table)
+- Persistence issue with columns or report (this is a different type, need a new table) [O]

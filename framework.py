@@ -18,7 +18,7 @@ my_report.columns = ["id", "name", "age"]
 my_report.columns_mapping = {"id": "customer_id", "name": "customer_name", "age": "customer_age"}
 my_report.separator = ','
 
-this_execution = Execution(execution_date = datetime.datetime.now(), execution_mode = my_report.mode)
+this_execution = Execution(execution_date=datetime.datetime.now(), execution_mode=my_report.mode)
 
 # Data retrieved from database
 
