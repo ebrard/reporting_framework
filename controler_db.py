@@ -98,10 +98,6 @@ def get_report_by_name(report_name, conn):
     return report
 
 
-def persist_report(report):
-    None
-
-
 def persist_columns(columns, record_id, conn):
     """Persist a list of columns to the storage"""
 
@@ -137,17 +133,51 @@ def persist_execution(execution, report_id, conn):
     # With for the class model records and generated_records
 
     c.execute('insert into Execution(report_id, execution_date, execution_mode) values (?, ?, ?)',
-              report_id,
-              execution.execution_date,
-              execution.execution_mode
+              (report_id,
+               execution.execution_date,
+               execution.execution_mode
+               )
               )
     execution_id = c.lastrowid
 
-    persist_records(execution.records, execution_id, conn)
-    persist_records(execution.generated_records, execution_id, conn)
+    if len(execution.records) > 0 :
+        persist_records(execution.records, execution_id, conn)
+
+    if len(execution.generated_records) > 0 :
+        persist_records(execution.generated_records, execution_id, conn)
+
+    conn.commit()
 
 
-def persist_report():
-    # No Use case for the moment
-    None
+def persist_report_column_mapping(column_mapping, report_id, conn):
+    return None
+
+
+def persist_report(report, conn):
+    """Persist report configuration"""
+    c = conn.cursor()
+
+    c.execute('insert into Report(name, report_query, mode, file_name, separator) values (?, ?, ?, ?, ?)',
+              (
+                  report.name,
+                  report.query,
+                  report.mode,
+                  report.file_name,
+                  report.separator
+              )
+              )
+    report_id = c.lastrowid
+
+    for k, v in report.columns_mapping.iteritems():
+        c.execute('insert into Report_Columns(report_id, sql_name, business_name) values (?, ?, ?)',
+                  (
+                      report_id,
+                      k,
+                      v
+                  )
+                  )
+
+    conn.commit()
+
+    return report_id
 
