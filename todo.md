@@ -15,3 +15,7 @@
 
 - Implement controler_db.py
 - Design db.sql
+
+# Main program
+
+- Implement std logging

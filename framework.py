@@ -31,9 +31,9 @@ my_report.execution.append(this_execution)
 my_report.pprint()
 
 # Execution 2
-this_execution = Execution(execution_date = datetime.datetime.now(), execution_mode = my_report.mode)
+this_execution = Execution(execution_date=datetime.datetime.now(), execution_mode=my_report.mode)
 
-query_result = [ ["0", "jeff", "0"], ["1", "jeremy", "20"], ["2", "emmanuel", "31"] ]
+query_result = [["0", "jeff", "0"], ["1", "jeremy", "20"], ["2", "emmanuel", "31"]]
 
 parse_query_result(query_result, this_execution, my_report.columns)
 
@@ -42,4 +42,4 @@ my_report.execution.append(this_execution)
 my_report.pprint()
 
 print("DELTA")
-generate_delta(my_report, this_execution)
+generate_delta(my_report)
