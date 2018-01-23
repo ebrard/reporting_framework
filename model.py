@@ -1,10 +1,10 @@
-from sortedcontainers import SortedList
 import hashlib
 
 
 class Report(object):
-    """docstring for Report"""
-    def __init__(self, name = None, query = None, mode = None, columns = None, columns_mapping = None, separator = ',', file_name = 'not set'):
+    """Report class is the report entity and the configuration"""
+    def __init__(self, name=None, query=None, mode=None, columns=None, columns_mapping=None, separator=',',
+                 file_name='not set'):
         super(Report, self).__init__()
         self.name = name
         self.query = query
@@ -34,23 +34,23 @@ class Report(object):
 
 
 class Execution(object):
-    """docstring for Execution"""
-    def __init__(self, execution_date = None, execution_type = None, execution_mode = None, records = None):
+    """Execution class contains information related to an execution of the report"""
+    def __init__(self, execution_date=None, execution_type=None, execution_mode=None, records=None):
         super(Execution, self).__init__()
         self.execution_date = execution_date
         self.execution_type = execution_type
         self.execution_mode = execution_mode
 
-        self.records = [records] # This holds the record from the data source
-        self.generated_records = [] # This holds the record from the delta execution, if full then equals
+        self.records = [records]  # This holds the record from the data source
+        self.generated_records = []  # This holds the record from the delta execution, if full then equals
 
-    def get_record_with_id(self, id):
-        return filter(lambda a_record: ( a_record and a_record.id == id ), self.records)[0]
+    def get_record_with_id(self, record_id):
+        return filter(lambda a_record: (a_record and a_record.id == record_id), self.records)[0]
 
     def describe(self):
         print("#####################")
         print("Execution date: "+self.execution_date.strftime("%Y-%m-%d %H:%M:%S"))
-        print("Constains records: ")
+        print("Contains records: ")
         for record in self.records:
             if record:
                 record.show()
@@ -67,7 +67,7 @@ class Column(object):
 
 
 class Record(object):
-    def __init__(self, id = None, Column = None):
+    def __init__(self, id=None, Column=None):
         super(Record, self).__init__()
         self.id = id
         self.record_hash = ''
@@ -101,11 +101,9 @@ class Record(object):
         return ','.join([column.value for column in self.columns])
 
     def hash_record(self):
-        column_sorted_by_name = sorted(self.columns, key = lambda l: l.name)
+        column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
         string_to_hash = ''.join([column.value for column in column_sorted_by_name if column.name != id])
-        self.record_hash = string_to_hash
-        # string_to_hash
-        # hashlib.md5(string_to_hash).hexdigest()
+        self.record_hash = hashlib.md5(string_to_hash).hexdigest()
 
     def append_column(self, name, value):
         self.columns.append(Column(name, value))

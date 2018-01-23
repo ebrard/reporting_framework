@@ -11,7 +11,7 @@ def parse_query_result(query_result, this_execution, columns):
         j = 0
         for column in row:
             # print("processing: "+columns[j]+" "+column)
-            this_column = Column( columns[j], column )
+            this_column = Column(columns[j], column)
             this_record.columns.append(this_column)
             j += 1
         this_record.hash_record()
