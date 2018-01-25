@@ -1,5 +1,6 @@
 from model import Column
 from model import Record
+import copy
 
 
 def parse_query_result(query_result, this_execution, columns):
@@ -9,7 +10,7 @@ def parse_query_result(query_result, this_execution, columns):
         this_record.record_type = 'sql'  # This record was read from a report query
         j = 0
         for column in row:
-            this_column = Column(columns[j], column)
+            this_column = Column(columns[j], str(column))  # We handle only string value type
             this_record.columns.append(this_column)
             j += 1
         this_record.hash_record()
@@ -24,45 +25,67 @@ def generate_business_columns(record, columns_mapping):
 
 
 def generate_delta(report):
-
     last_report, last_report_1 = report.get_last_report_pairs()
 
-    last_report_ids = [element.id for element in last_report.records if element]
-    last_report_1_ids = [element.id for element in last_report_1.records if element]
+    if last_report and last_report_1:
 
-    for row in last_report.records:
+        last_report_ids = [str(element.id) for element in last_report.records if element]
+        last_report_1_ids = [str(element.id) for element in last_report_1.records if element]
 
-        # To-Do: Fix issue with None assignment
-        if row:
-            if row.id in last_report_1_ids:
-                # Updated
-                current_row = last_report.get_record_with_id(row.id)
-                previous_row = last_report_1.get_record_with_id(row.id)
+        for row in last_report.records:
 
-                if not current_row.is_equals(previous_row, mode='slow'):
-                    row.append_column("crud type", "U")
-                    row.record_type = 'framework'
-                    last_report.generated_records.append(row)
-                    print(row.to_string())
+            if row:
+                if str(row.id) in last_report_1_ids:
+                    # Updated
+                    current_row = last_report.get_record_with_id(str(row.id))
+                    previous_row = last_report_1.get_record_with_id(str(row.id))
 
+                    if not current_row.is_equals(previous_row, mode='fast'):
+                        generated_row = copy.deepcopy(row)
+                        generated_row.append_column("crud type", "U")
+                        generated_row.record_type = 'framework'
+                        last_report.generated_records.append(generated_row)
+
+                    else:
+                        generated_row = copy.deepcopy(row)
+                        generated_row.append_column("crud type", "S")
+                        generated_row.record_type = 'framework'
+                        last_report.generated_records.append(generated_row)
                 else:
-                    row.append_column("crud type", "S")
-                    row.record_type = 'framework'
-                    last_report.generated_records.append(row)
-                    print(row.to_string())
-            else:
-                # Created
-                row.append_column("crud type", "C")
-                row.record_type = 'framework'
-                last_report.generated_records.append(row)
-                print(row.to_string())
+                    # Created
+                    generated_row = copy.deepcopy(row)
+                    generated_row.append_column("crud type", "C")
+                    generated_row.record_type = 'framework'
+                    last_report.generated_records.append(generated_row)
 
-    deleted_ids = [element for element in last_report_1_ids if element and element not in last_report_ids]
+        deleted_ids = [element for element in last_report_1_ids if element and element not in last_report_ids]
 
-    for deleted_id in deleted_ids:
-        # Deleted
-        row = last_report_1.get_record_with_id(deleted_id)
-        row.record_type = 'framework'
-        row.append_column("crud type", "D")
-        last_report.generated_records.append(row)
-        print(row.to_string())
+        for deleted_id in deleted_ids:
+            # Deleted
+            row = last_report_1.get_record_with_id(deleted_id)
+            generated_row = copy.deepcopy(row)
+            generated_row.record_type = 'framework'
+            generated_row.append_column("crud type", "D")
+            last_report.generated_records.append(generated_row)
+
+    else:
+        if last_report:
+            print("Info : No existing execution, creating a full report")
+            for row in last_report.records:
+                generated_row = copy.deepcopy(row)
+
+                generated_row.append_column("crud type", "C")
+                generated_row.record_type = 'framework'
+                last_report.generated_records.append(generated_row)
+        else:
+            print("Error no report to generate")
+            exit(1)
+
+
+def generate_full(report):
+    print("Full report requested")
+    last_report, last_report_1 = report.get_last_report_pairs()
+    for row in last_report.records:
+        generated_row = copy.deepcopy(row)
+        generated_row.record_type = 'framework'
+        last_report.generated_records.append(generated_row)

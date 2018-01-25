@@ -4,7 +4,7 @@ import hashlib
 class Report(object):
     """Report class is the report entity and the configuration"""
     def __init__(self, name=None, query=None, mode=None, columns=None, columns_mapping=None, separator=',',
-                 file_name='not set'):
+                 file_name='not set', report_id=None):
         super(Report, self).__init__()
         self.name = name
         self.query = query
@@ -22,6 +22,12 @@ class Report(object):
         if columns_mapping:
             self.columns_mapping = columns_mapping
 
+        if report_id:
+            self._id = report_id
+
+    def get_id(self):
+        return self._id
+
     def describe(self):
         print(self.name,
               self.query,
@@ -31,8 +37,17 @@ class Report(object):
               len(self.execution))
 
     def get_last_report_pairs(self):
-        sorted_execution = sorted(self.execution, key=lambda an_execution: an_execution.execution_date)
-        return sorted_execution[len(sorted_execution)-1], sorted_execution[len(sorted_execution)-2]
+        for execution in self.execution:
+            print(execution)
+
+        if len(self.execution) > 1:
+            sorted_execution = sorted(self.execution, key=lambda an_execution: an_execution.execution_date)
+            return sorted_execution[len(sorted_execution)-1], sorted_execution[len(sorted_execution)-2]
+        else:
+            if len(self.execution) == 1:
+                return self.execution[0], None
+            else:
+                return None, None
 
     def pprint(self):
         last_execution, last_execution_n_1 = self.get_last_report_pairs()
@@ -47,7 +62,7 @@ class Report(object):
     def write_to_file(self):
         f = open(self.file_name, 'w')
         # To do
-        print("Writing last execution to "+self.file_name)
+        print("Info : Writing last execution to "+self.file_name)
         # Get the last execution self.execution[-1]
 
         # Write headers (business column) with the separator
@@ -77,7 +92,18 @@ class Execution(object):
             self.records = records
 
     def get_record_with_id(self, record_id):
-        return filter(lambda a_record: (a_record and a_record.id == record_id), self.records)[0]
+        records = filter(lambda a_record: (a_record and str(a_record.id) == str(record_id)), self.records)
+
+        if len(records) > 1:
+            print("Error : for than one record match")
+        else:
+            if len(records) == 1:
+                return records[0]
+            else:
+                print("Error no matching record with: "+str(record_id))
+                for my_record in self.records:
+                    my_record.show()
+                exit(1)
 
     def describe(self):
         print("#####################")
@@ -122,7 +148,7 @@ class Record(object):
                     if a_record_column.name == column.name:
                         if not a_record_column.is_equals(column):
                             is_equals = False
-                            print("Record with id: "
+                            print("Info : Record with id: "
                                   + self.id
                                   + " "
                                   + column.name
@@ -139,7 +165,7 @@ class Record(object):
     def show(self):
         for column in self.columns:
             if column:
-                print(column.name+" : "+column.value)
+                print("Info : Record id "+self.id+" "+column.name+" : "+column.value)
 
     def to_string(self, separator=','):
         return separator.join([column.value for column in self.columns])
