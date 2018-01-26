@@ -55,7 +55,7 @@ def get_records_by_execution_id(execution_id, conn):
     c = conn.cursor()
 
     sql_records_by_execution_id = "select id, business_key, execution_id, record_hash, record_type from Record where " \
-                                  "execution_id = '%s' and record_type = 'sql'"
+                                  "execution_id = '%s' and record_type = 'source'"
 
     # SQL Records
     query_result = c.execute(sql_records_by_execution_id % execution_id).fetchall()
@@ -192,13 +192,13 @@ def persist_execution(execution, report_id, conn):
     execution_id = c.lastrowid
 
     if len(execution.records) > 0:
-        print("Info : persisting records type sql")
+        print("Info : persisting records type source")
         persist_records(execution.records, execution_id, conn)
     else:
         print("Warning : no sql record to persist")
 
     if len(execution.generated_records) > 0:
-        print("Info : persisting records type framework")
+        print("Info : persisting records type generated")
         persist_records(execution.generated_records, execution_id, conn)
     else:
         print("Warning : no framework record to persist")

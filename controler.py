@@ -7,7 +7,7 @@ def parse_query_result(query_result, this_execution, columns):
     i = 0
     for row in query_result:
         this_record = Record(row[0])
-        this_record.record_type = 'sql'  # This record was read from a report query
+        this_record.record_type = 'source'  # This record was read from a report query
         j = 0
         for column in row:
             this_column = Column(columns[j], str(column))  # We handle only string value type
@@ -40,22 +40,22 @@ def generate_delta(report):
                     current_row = last_report.get_record_with_id(str(row.id))
                     previous_row = last_report_1.get_record_with_id(str(row.id))
 
-                    if not current_row.is_equals(previous_row, mode='fast'):
+                    if not current_row.is_equals(previous_row, mode='slow'):
                         generated_row = copy.deepcopy(row)
                         generated_row.append_column("crud type", "U")
-                        generated_row.record_type = 'framework'
+                        generated_row.record_type = 'generated'
                         last_report.generated_records.append(generated_row)
 
                     else:
                         generated_row = copy.deepcopy(row)
                         generated_row.append_column("crud type", "S")
-                        generated_row.record_type = 'framework'
+                        generated_row.record_type = 'generated'
                         last_report.generated_records.append(generated_row)
                 else:
                     # Created
                     generated_row = copy.deepcopy(row)
                     generated_row.append_column("crud type", "C")
-                    generated_row.record_type = 'framework'
+                    generated_row.record_type = 'generated'
                     last_report.generated_records.append(generated_row)
 
         deleted_ids = [element for element in last_report_1_ids if element and element not in last_report_ids]
@@ -64,7 +64,7 @@ def generate_delta(report):
             # Deleted
             row = last_report_1.get_record_with_id(deleted_id)
             generated_row = copy.deepcopy(row)
-            generated_row.record_type = 'framework'
+            generated_row.record_type = 'generated'
             generated_row.append_column("crud type", "D")
             last_report.generated_records.append(generated_row)
 
@@ -75,7 +75,7 @@ def generate_delta(report):
                 generated_row = copy.deepcopy(row)
 
                 generated_row.append_column("crud type", "C")
-                generated_row.record_type = 'framework'
+                generated_row.record_type = 'generated'
                 last_report.generated_records.append(generated_row)
         else:
             print("Error no report to generate")
@@ -87,5 +87,5 @@ def generate_full(report):
     last_report, last_report_1 = report.get_last_report_pairs()
     for row in last_report.records:
         generated_row = copy.deepcopy(row)
-        generated_row.record_type = 'framework'
+        generated_row.record_type = 'generated'
         last_report.generated_records.append(generated_row)

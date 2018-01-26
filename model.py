@@ -37,8 +37,6 @@ class Report(object):
               len(self.execution))
 
     def get_last_report_pairs(self):
-        for execution in self.execution:
-            print(execution)
 
         if len(self.execution) > 1:
             sorted_execution = sorted(self.execution, key=lambda an_execution: an_execution.execution_date)
@@ -95,7 +93,7 @@ class Execution(object):
         records = filter(lambda a_record: (a_record and str(a_record.id) == str(record_id)), self.records)
 
         if len(records) > 1:
-            print("Error : for than one record match")
+            print("Error : more than one record match")
         else:
             if len(records) == 1:
                 return records[0]
@@ -148,14 +146,14 @@ class Record(object):
                     if a_record_column.name == column.name:
                         if not a_record_column.is_equals(column):
                             is_equals = False
-                            print("Info : Record with id: "
-                                  + self.id
-                                  + " "
-                                  + column.name
-                                  + " changed value from "
-                                  + a_record_column.value
-                                  + " to "
-                                  + column.value)
+                            #print("Info : Record with id: "
+                            #      + str(self.id)
+                            #      + " "
+                            #      + column.name
+                            #      + " changed value from "
+                            #      + a_record_column.value
+                            #      + " to "
+                            #      + column.value)
         else:
             if self.record_hash != a_record.record_hash:
                 is_equals = False

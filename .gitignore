@@ -1,3 +1,12 @@
+*.db
 *.pyc
-backend.db
+backend*.db
 .idea/*
+test/data.db
+*.txt
+*.dat
+*.pickle
+*.csv
+*journal*
+*.db
+*.db

@@ -35,7 +35,7 @@ create table Record (
     business_key varchar(800), -- Needs to be persisted from the engine
     execution_id int,
     record_hash text,
-    record_type varchar(50) check(record_type in ('sql', 'framework')), -- change for source, delta, full
+    record_type varchar(50) check(record_type in ('source', 'generated')), -- change for source, delta, full
     FOREIGN KEY(execution_id) REFERENCES Execution(id)
 ) ;
 
