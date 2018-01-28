@@ -74,6 +74,9 @@ def get_records_by_execution_id(execution_id, conn):
     # No Use-Case
     # but could be used to re-produce a generated report file at any time
 
+    if len(records) == 0:
+        print "Error : no record found for execution "+execution_id
+
     return records
 
 

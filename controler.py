@@ -1,7 +1,7 @@
 from model import Column
 from model import Record
 import copy
-
+import datetime
 
 def parse_query_result(query_result, this_execution, columns):
     i = 0
@@ -14,7 +14,7 @@ def parse_query_result(query_result, this_execution, columns):
             this_record.columns.append(this_column)
             j += 1
         this_record.hash_record()
-        this_execution.records.append(this_record)
+        this_execution.add_record(this_record)
         i += 1
 
 
@@ -25,6 +25,7 @@ def generate_business_columns(record, columns_mapping):
 
 
 def generate_delta(report):
+    print "Info : Starting comparing records "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     last_report, last_report_1 = report.get_last_report_pairs()
 
     if last_report and last_report_1:
@@ -40,7 +41,7 @@ def generate_delta(report):
                     current_row = last_report.get_record_with_id(str(row.id))
                     previous_row = last_report_1.get_record_with_id(str(row.id))
 
-                    if not current_row.is_equals(previous_row, mode='slow'):
+                    if not current_row.is_equal(previous_row, mode='fast'):
                         generated_row = copy.deepcopy(row)
                         generated_row.append_column("crud type", "U")
                         generated_row.record_type = 'generated'
@@ -80,6 +81,8 @@ def generate_delta(report):
         else:
             print("Error no report to generate")
             exit(1)
+
+    print "Info : End of records comparison "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_full(report):

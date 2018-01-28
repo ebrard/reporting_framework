@@ -16,6 +16,9 @@ sqlite3 ${root_path}/db/backend.db < ${test_path}/CreateReport.sql
 exit_on_error
 
 echo "Create data in the source database"
+sqlite3 ${db_path}/data.db "drop table if exists customer ;"
+sqlite3 ${db_path}/data.db "create table customer(id int, first_name varchar(200), last_name varchar(200), \
+age int, birthdate date) ;"
 sqlite3 ${db_path}/data.db "delete from customer ;"
 exit_on_error
 

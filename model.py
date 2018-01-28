@@ -1,8 +1,14 @@
+"""
+
+This module implements the logical data model of the reporting framework
+
+"""
+
 import hashlib
 
 
 class Report(object):
-    """Report class is the report entity and the configuration"""
+    """Report class is the report entity and the configuration holder of a report"""
     def __init__(self, name=None, query=None, mode=None, columns=None, columns_mapping=None, separator=',',
                  file_name='not set', report_id=None):
         super(Report, self).__init__()
@@ -26,9 +32,11 @@ class Report(object):
             self._id = report_id
 
     def get_id(self):
+        """Return the database id of the report"""
         return self._id
 
     def describe(self):
+        """Display information about the report on stdout"""
         print(self.name,
               self.query,
               self.mode,
@@ -37,43 +45,44 @@ class Report(object):
               len(self.execution))
 
     def get_last_report_pairs(self):
-
+        """Return the last two executions of a report, used for comparison"""
         if len(self.execution) > 1:
             sorted_execution = sorted(self.execution, key=lambda an_execution: an_execution.execution_date)
             return sorted_execution[len(sorted_execution)-1], sorted_execution[len(sorted_execution)-2]
         else:
             if len(self.execution) == 1:
+                print "Warning : one execution only to sort"
                 return self.execution[0], None
             else:
+                print("Error : no execution to return")
                 return None, None
 
     def pprint(self):
-        last_execution, last_execution_n_1 = self.get_last_report_pairs()
-        print("Content of last execution: ")
+        """Display information about the last execution"""
+        last_execution = self.get_last_report_pairs()[0]
+        print "Content of last execution: "
         # Display header
-        print(self.separator.join(self.columns))
+        print self.separator.join(self.columns)
         # Display content
         for record in last_execution.records:
             if record:
-                print(self.separator.join([column.value for column in record.columns if column]))
+                print self.separator.join([column.value for column in record.columns if column])
 
     def write_to_file(self):
-        f = open(self.file_name, 'w')
-        # To do
-        print("Info : Writing last execution to "+self.file_name)
-        # Get the last execution self.execution[-1]
+        """Write the last execution to file on disk"""
+        file_out = open(self.file_name, 'w')
 
         # Write headers (business column) with the separator
         columns_for_writing = [self.columns_mapping[col] for col in self.columns]
         columns_for_writing.append('crud type')
-        f.write(self.separator.join(columns_for_writing)+'\n')
+        file_out.write(self.separator.join(columns_for_writing)+'\n')
 
         # Write data with the separator
+        print "Info : Writing last execution to " + self.file_name
         for row in self.execution[-1].generated_records:
-            f.write(row.to_string(self.separator)+'\n')
+            file_out.write(row.to_string(self.separator)+'\n')
 
-        f.close()
-        return None
+        file_out.close()
 
 
 class Execution(object):
@@ -83,50 +92,68 @@ class Execution(object):
         self.execution_date = execution_date
         self.execution_mode = execution_mode
 
-        self.records = []  # This holds the record from the data source
+        # self.records = []  # This holds the record from the data source
+        self.records = []
         self.generated_records = []  # This holds the record from the delta execution, if full then equals
+        self.records_lkp = {}
 
         if records:
-            self.records = records
+            self.records = sorted(records, key=lambda a_record: a_record.id)
+
+            for record in records:
+                self.records_lkp[str(record.id)] = record
+
+    def add_record(self, record):
+        self.records.append(record)
+        self.records_lkp[str(record.id)] = record
 
     def get_record_with_id(self, record_id):
-        records = filter(lambda a_record: (a_record and str(a_record.id) == str(record_id)), self.records)
+        """Return a record with the specified business key, only one expected"""
+        # records = filter(lambda a_record: (a_record and str(a_record.id) == str(record_id)), self.records)
+        # records = [a_record for a_record in self.records if str(a_record.id) == str(record_id)]
+        records = [self.records_lkp[str(record_id)]]
 
         if len(records) > 1:
-            print("Error : more than one record match")
+            print "Error : more than one record match"
+            exit(1)
         else:
             if len(records) == 1:
                 return records[0]
             else:
-                print("Error no matching record with: "+str(record_id))
+                print "Error no matching record with: "+str(record_id)
                 for my_record in self.records:
                     my_record.show()
                 exit(1)
 
     def describe(self):
-        print("#####################")
-        print("Execution date: "+self.execution_date.strftime("%Y-%m-%d %H:%M:%S"))
-        print("Contains records: ")
+        """Display information about an execution"""
+        print "#####################"
+        print "Execution date: "+self.execution_date.strftime("%Y-%m-%d %H:%M:%S")
+        print "Contains records: "
         for record in self.records:
             if record:
-                print("record id: "+str(record.id))
+                print "record id: "+str(record.id)
                 record.show()
 
 
 class Column(object):
+    """Column class holds the name and value of a column which belongs to a record"""
     def __init__(self, name, value):
         super(Column, self).__init__()
         self.name = name
         self.value = value
 
-    def is_equals(self, a_column):
+    def is_equal(self, a_column):
+        """Assert if column a equals column b based on value"""
         return self.value == a_column.value
 
     def to_string(self):
+        """Return a string representation of a column"""
         return self.name+" : "+self.value
 
 
 class Record(object):
+    """This class contains record level information and hash value for faster compare"""
     def __init__(self, record_id=None, columns=None, record_type='', record_hash=''):
         super(Record, self).__init__()
         self.id = record_id
@@ -137,16 +164,17 @@ class Record(object):
         if columns:
             self.columns = columns
 
-    def is_equals(self, a_record, mode='slow'):
+    def is_equal(self, a_record, mode='slow'):
+        """Assert if record a equals record b based on column compare"""
         is_equals = True
 
         if mode == 'slow':
             for column in self.columns:
                 for a_record_column in a_record.columns:
                     if a_record_column.name == column.name:
-                        if not a_record_column.is_equals(column):
+                        if not a_record_column.is_equal(column):
                             is_equals = False
-                            #print("Info : Record with id: "
+                            # print("Info : Record with id: "
                             #      + str(self.id)
                             #      + " "
                             #      + column.name
@@ -161,17 +189,21 @@ class Record(object):
         return is_equals
 
     def show(self):
+        """Display all columns of a record"""
         for column in self.columns:
             if column:
-                print("Info : Record id "+self.id+" "+column.name+" : "+column.value)
+                print "Info : Record id "+str(self.id)+" "+column.name+" : "+column.value
 
     def to_string(self, separator=','):
+        """String representation of a record used for hashing"""
         return separator.join([column.value for column in self.columns])
 
     def hash_record(self):
+        """Hash a string representation of a record for comparison"""
         column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
         string_to_hash = ''.join([column.value for column in column_sorted_by_name if column.name != id])
         self.record_hash = hashlib.md5(string_to_hash).hexdigest()
 
     def append_column(self, name, value):
+        """Add a column to an existing record (append at the end)"""
         self.columns.append(Column(name, value))

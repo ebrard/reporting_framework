@@ -11,7 +11,8 @@ root_path="/Users/manu/Documents/Reporting_Framework"
 test_path="${root_path}/test/testcases/GenerateDeltaReport/"
 db_path="/Users/manu/Documents/Reporting_Framework/test"
 
-nb_records=100
+nb_records=5000
+nb_cycle=1
 
 echo "Creating report in the backend database"
 sqlite3 ${root_path}/db/backend.db < ${test_path}/CreateReport.sql
@@ -24,7 +25,7 @@ exit_on_error
 python3 ${test_path}/CreateOrModifyData.py create ${nb_records}
 exit_on_error
 
-for i in {1..5}
+for i in {1..${nb_cycle}}
 do
 
 	echo "Running Report in delta mode"
@@ -34,6 +35,7 @@ do
 	mv /Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report.csv \
 	/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report_1.csv
 
+    echo "Modify data in the source database"
 	python3 ${test_path}/CreateOrModifyData.py modify ${nb_records}
 	exit_on_error
 
