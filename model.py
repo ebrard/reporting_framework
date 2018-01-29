@@ -9,7 +9,8 @@ import hashlib
 
 class Report(object):
     """Report class is the report entity and the configuration holder of a report"""
-    def __init__(self, name=None, query=None, mode=None, columns=None, columns_mapping=None, separator=',',
+    def __init__(self, name=None, query=None, mode=None,
+                 columns=None, columns_mapping=None, separator=',',
                  file_name='not set', report_id=None):
         super(Report, self).__init__()
         self.name = name
@@ -46,16 +47,23 @@ class Report(object):
 
     def get_last_report_pairs(self):
         """Return the last two executions of a report, used for comparison"""
+        current_execution = None
+        previous_execution = None
+
         if len(self.execution) > 1:
-            sorted_execution = sorted(self.execution, key=lambda an_execution: an_execution.execution_date)
-            return sorted_execution[len(sorted_execution)-1], sorted_execution[len(sorted_execution)-2]
+            sorted_execution = sorted(self.execution,
+                                      key=lambda an_execution: an_execution.execution_date)
+            list_size = len(sorted_execution)
+            current_execution = sorted_execution[list_size-1]
+            previous_execution = sorted_execution[list_size-2]
         else:
             if len(self.execution) == 1:
                 print "Warning : one execution only to sort"
-                return self.execution[0], None
+                current_execution = self.execution[0]
             else:
-                print("Error : no execution to return")
-                return None, None
+                print "Error : no execution to return"
+
+        return current_execution, previous_execution
 
     def pprint(self):
         """Display information about the last execution"""
@@ -92,9 +100,8 @@ class Execution(object):
         self.execution_date = execution_date
         self.execution_mode = execution_mode
 
-        # self.records = []  # This holds the record from the data source
-        self.records = []
-        self.generated_records = []  # This holds the record from the delta execution, if full then equals
+        self.records = []  # holds the record from the data source
+        self.generated_records = []  # holds the record from the delta execution
         self.records_lkp = {}
 
         if records:
@@ -104,26 +111,19 @@ class Execution(object):
                 self.records_lkp[str(record.id)] = record
 
     def add_record(self, record):
-        self.records.append(record)
-        self.records_lkp[str(record.id)] = record
+        """Add a record to an execution"""
+        if record:
+            self.records.append(record)
+            self.records_lkp[str(record.id)] = record
 
     def get_record_with_id(self, record_id):
         """Return a record with the specified business key, only one expected"""
-        # records = filter(lambda a_record: (a_record and str(a_record.id) == str(record_id)), self.records)
-        # records = [a_record for a_record in self.records if str(a_record.id) == str(record_id)]
-        records = [self.records_lkp[str(record_id)]]
 
-        if len(records) > 1:
-            print "Error : more than one record match"
+        if str(record_id) not in self.records_lkp:
+            print "Error no matching record with: " + str(record_id)
             exit(1)
-        else:
-            if len(records) == 1:
-                return records[0]
-            else:
-                print "Error no matching record with: "+str(record_id)
-                for my_record in self.records:
-                    my_record.show()
-                exit(1)
+
+        return self.records_lkp[str(record_id)]
 
     def describe(self):
         """Display information about an execution"""
@@ -201,7 +201,11 @@ class Record(object):
     def hash_record(self):
         """Hash a string representation of a record for comparison"""
         column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
-        string_to_hash = ''.join([column.value for column in column_sorted_by_name if column.name != id])
+
+        string_to_hash = ''.join([column.value for column in column_sorted_by_name
+                                  if column.name != id]
+                                )
+
         self.record_hash = hashlib.md5(string_to_hash).hexdigest()
 
     def append_column(self, name, value):

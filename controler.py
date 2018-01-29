@@ -1,9 +1,18 @@
-from model import Column
-from model import Record
+"""
+
+This module implements functions that interact directly with the model.
+This does not contain any end-user facing functions
+
+"""
 import copy
 import datetime
+from model import Column
+from model import Record
+
 
 def parse_query_result(query_result, this_execution, columns):
+    """Reads and parses data source query result and add it to
+    existing execution instance"""
     i = 0
     for row in query_result:
         this_record = Record(row[0])
@@ -19,12 +28,14 @@ def parse_query_result(query_result, this_execution, columns):
 
 
 def generate_business_columns(record, columns_mapping):
+    """Generates columns mapping dictionary"""
     for column in record.columns:
         if column.name in columns_mapping:
             column.name = columns_mapping[column.name]
 
 
 def generate_delta(report):
+    """Generate delta report between current and previous data source state"""
     print "Info : Starting comparing records "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     last_report, last_report_1 = report.get_last_report_pairs()
 
@@ -59,7 +70,8 @@ def generate_delta(report):
                     generated_row.record_type = 'generated'
                     last_report.generated_records.append(generated_row)
 
-        deleted_ids = [element for element in last_report_1_ids if element and element not in last_report_ids]
+        deleted_ids = [element for element in last_report_1_ids
+                       if element and element not in last_report_ids]
 
         for deleted_id in deleted_ids:
             # Deleted
@@ -71,7 +83,7 @@ def generate_delta(report):
 
     else:
         if last_report:
-            print("Info : No existing execution, creating a full report")
+            print "Info : No existing execution, creating a full report"
             for row in last_report.records:
                 generated_row = copy.deepcopy(row)
 
@@ -79,15 +91,16 @@ def generate_delta(report):
                 generated_row.record_type = 'generated'
                 last_report.generated_records.append(generated_row)
         else:
-            print("Error no report to generate")
+            print "Error no report to generate"
             exit(1)
 
     print "Info : End of records comparison "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def generate_full(report):
-    print("Full report requested")
-    last_report, last_report_1 = report.get_last_report_pairs()
+    """Generate full report even if delta is the default configuration"""
+    print "Full report requested"
+    last_report = report.get_last_report_pairs()[0]  # No interest in previous execution
     for row in last_report.records:
         generated_row = copy.deepcopy(row)
         generated_row.record_type = 'generated'

@@ -16,6 +16,7 @@ cmd_parser = argparse.ArgumentParser()
 cmd_parser.add_argument('action', help='List all available reports for execution')
 cmd_parser.add_argument('--name', help='Report name to execution')
 cmd_parser.add_argument('--mode', help='Specify mode for this execution')
+cmd_parser.add_argument('--id', help='Specify execution to re-generate')
 
 args = cmd_parser.parse_args()
 

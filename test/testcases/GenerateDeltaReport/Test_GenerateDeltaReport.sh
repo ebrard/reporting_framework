@@ -11,7 +11,7 @@ root_path="/Users/manu/Documents/Reporting_Framework"
 test_path="${root_path}/test/testcases/GenerateDeltaReport/"
 db_path="/Users/manu/Documents/Reporting_Framework/test"
 
-nb_records=5000
+nb_records=2000
 nb_cycle=1
 
 echo "Creating report in the backend database"
