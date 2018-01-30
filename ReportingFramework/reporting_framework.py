@@ -6,7 +6,7 @@ from controler_db import get_report_by_name, persist_execution, get_all_report
 from controler import parse_query_result, generate_delta, generate_full
 from model import Execution
 
-backend_db_file = '/Users/manu/Documents/Reporting_Framework/db/backend.db'
+backend_db_file = '/Users/manu/Documents/ReportingFramework/db/backend.db'
 
 # ###################### #
 # Parse command line arg #

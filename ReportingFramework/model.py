@@ -163,12 +163,13 @@ class Record(object):
 
         if columns:
             self.columns = columns
+            self.hash_record()
 
     def is_equal(self, a_record, mode='slow'):
         """Assert if record a equals record b based on column compare"""
         is_equals = True
 
-        if mode == 'slow':
+        if mode == 'slow' or (self.record_hash == '' and a_record.record_hash == ''):
             for column in self.columns:
                 for a_record_column in a_record.columns:
                     if a_record_column.name == column.name:
@@ -204,7 +205,7 @@ class Record(object):
 
         string_to_hash = ''.join([column.value for column in column_sorted_by_name
                                   if column.name != id]
-                                )
+                                 )
 
         self.record_hash = hashlib.md5(string_to_hash).hexdigest()
 
