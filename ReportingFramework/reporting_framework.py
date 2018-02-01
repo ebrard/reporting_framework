@@ -2,7 +2,7 @@ import argparse
 import sqlite3
 import datetime
 
-from controler_db import get_report_by_name, persist_execution, get_all_report
+from controler_db import get_report_by_name, persist_execution, get_all_report, get_report_past_execution
 from controler import parse_query_result, generate_delta, generate_full
 from model import Execution
 
@@ -23,6 +23,7 @@ args = cmd_parser.parse_args()
 execution_mode = args.mode
 ui_action = args.action
 report_name = args.name
+execution_id = args.id
 
 # ###################### #
 # List available report  #
@@ -100,9 +101,31 @@ if ui_action == "execute":
 # Regenerate report  #
 # ################## #
 
+if ui_action == "execution":
+
+    # Connect to backend
+    conn = sqlite3.connect(backend_db_file)
+    conn.row_factory = sqlite3.Row
+
+    execution_list = get_report_past_execution(report_name, conn)
+    for an_execution in execution_list:
+        print(str(an_execution["execution_id"])+" : "+an_execution["name"]+" "+an_execution["execution_date"])
+
+    conn.close()
+
+
+# ################## #
+# Regenerate report  #
+# ################## #
+
 if ui_action == "regenerate":
 
     # Connect to backend
-        # Retrieve a specific execution by date
-        # Write execution to file
-    print("Not implemented yet")
+    conn = sqlite3.connect(backend_db_file)
+    conn.row_factory = sqlite3.Row
+
+    # Retrieve report
+    this_report = get_report_by_name(report_name, conn, execution_id)
+
+    # Write report data to file
+    this_report.write_to_file()
