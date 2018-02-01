@@ -66,7 +66,7 @@ if ui_action == "execute":
         this_report.mode = execution_mode
 
     # Connect to data database
-    conn_source = sqlite3.connect('/Users/manu/Documents/Reporting_Framework/test/data.db')
+    conn_source = sqlite3.connect('/Users/manu/Documents/ReportingFramework/test/data.db')
     cur_source = conn_source.cursor()
 
     # Run report query on this database

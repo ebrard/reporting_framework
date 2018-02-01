@@ -12,7 +12,7 @@ values (
 'test',
 'select id, first_name, last_name, age from customer;',
 'delta',
-'/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report.csv',
+'/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report.csv',
 ','
 ) ;
 

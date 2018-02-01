@@ -6,12 +6,12 @@ import sys
 import pickle as pickle
 import random
 
-file_created = "/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/created.pickle"
-file_status_path = "/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/file_status.dat"
+file_created = "/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/created.pickle"
+file_status_path = "/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/file_status.dat"
 
 nb_customers = int(sys.argv[2])
 
-db = dataset.connect('sqlite:////Users/manu/Documents/Reporting_Framework/test/data.db')
+db = dataset.connect('sqlite:////Users/manu/Documents/ReportingFramework/test/data.db')
 
 table = db['customer']
 
