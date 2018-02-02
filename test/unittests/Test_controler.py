@@ -30,7 +30,10 @@ class TestGenerateBusinessColumns(unittest.TestCase):
 
     def test_generate_business_columns(self):
         columns_definition = ["id", "first name", "last name", "age"]
-        column_mapping = {"id": "id", "first name": "First Name", "last name": "Last Name", "age": "Age"}
+        column_mapping = {"id": {"business_name": "id"},
+                          "first name": {"business_name": "First Name"},
+                          "last name": {"business_name": "Last Name"},
+                          "age": {"business_name": "Age"}}
 
         columns_definition = ["id", "first name", "last name", "age"]
 
@@ -47,7 +50,7 @@ class TestGenerateBusinessColumns(unittest.TestCase):
             ctrl.generate_business_columns(record, column_mapping)
 
             for col in record.columns:
-                self.assertIn(col.name, list(column_mapping.values()))
+                self.assertIn(col.name, [value["business_name"] for value in list(column_mapping.values())])
 
 
 if __name__ == '__main__':

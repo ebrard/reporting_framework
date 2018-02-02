@@ -10,7 +10,7 @@ from model import Column
 from model import Record
 
 
-def parse_query_result(query_result, this_execution, columns):
+def parse_query_result(query_result, this_execution, columns, columns_mapping):
     """Reads and parses data source query result and add it to
     existing execution instance"""
     i = 0
@@ -19,7 +19,9 @@ def parse_query_result(query_result, this_execution, columns):
         this_record.record_type = 'source'  # This record was read from a report query
         j = 0
         for column in row:
-            this_column = Column(columns[j], str(column))  # We handle only string value type
+            this_column = Column(columns[j],
+                                 str(column), # We handle only string value type
+                                 columns_mapping[columns[j]]["is_used_for_compare"])
             this_record.columns.append(this_column)
             j += 1
         this_record.hash_record()
@@ -30,8 +32,8 @@ def parse_query_result(query_result, this_execution, columns):
 def generate_business_columns(record, columns_mapping):
     """Generates columns mapping dictionary by changing column name in the Column object"""
     for column in record.columns:
-        if column.name in columns_mapping:
-            column.name = columns_mapping[column.name]
+        if column.name in [value for value in list(columns_mapping.keys())]:
+            column.name = columns_mapping[column.name]["business_name"]
 
 
 def generate_delta(report):

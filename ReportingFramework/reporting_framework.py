@@ -76,7 +76,7 @@ if ui_action == "execute":
 
     # Parse query result
     # Associate parsed data with the execution
-    parse_query_result(query_result, execution, this_report.columns)
+    parse_query_result(query_result, execution, this_report.columns, this_report.columns_mapping)
     this_report.execution.append(execution)  # Add report execution to the report
 
     # Close connection to data database

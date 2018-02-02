@@ -153,7 +153,6 @@ def get_execution_by_report_id(report_id, conn, execution_id=None):
 
         execution = [this_execution]
 
-
     if execution is None:
         print("Warning: no execution found for report id " + str(report_id))
 
@@ -164,7 +163,8 @@ def get_report_by_name(report_name, conn, execution_id=None):
     cursor = conn.cursor()
 
     sql_report_by_name = "select id, name, report_query, mode, file_name, separator from Report where name = '%s';"
-    sql_report_columns_by_id = "select sql_name, business_name from Report_Columns where report_id = '%s';"
+    sql_report_columns_by_id = "select sql_name, business_name, is_used_for_compare " \
+                               "from Report_Columns where report_id = '%s';"
 
     # Fetch report information from persistence
     print "Info : Retrieving report from the database "+now()
@@ -190,7 +190,8 @@ def get_report_by_name(report_name, conn, execution_id=None):
 
     for row in query_result:
         columns.append(row["sql_name"])
-        columns_mapping[row["sql_name"]] = row["business_name"]
+        columns_mapping[row["sql_name"]] = {"business_name": row["business_name"]}
+        columns_mapping[row["sql_name"]]["is_used_for_compare"] = str(row["is_used_for_compare"])
 
     report = Report(report_name,
                     report_query,

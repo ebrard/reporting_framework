@@ -74,7 +74,7 @@ class TestColumnIsEqual(unittest.TestCase):
                         .is_equal(Column(name="first_name", value="Emmanuel")))
 
         self.assertFalse(Column(name="first_name", value="Emmanuel")
-                        .is_equal(Column(name="first_name", value="Jule")))
+                         .is_equal(Column(name="first_name", value="Jule")))
 
     def test_is_equal_int(self):
         self.assertTrue(Column(name="age", value=1)
@@ -82,6 +82,13 @@ class TestColumnIsEqual(unittest.TestCase):
 
         self.assertFalse(Column(name="age", value=1)
                          .is_equal(Column(name="age", value=2)))
+
+    def test_is_equal_ignore_col(self):
+        self.assertTrue(Column(name="age", value=1, is_used_for_compare=0)
+                        .is_equal(Column(name="age", value=1, is_used_for_compare=0)))
+
+        self.assertTrue(Column(name="age", value=1, is_used_for_compare=0)
+                        .is_equal(Column(name="age", value=2, is_used_for_compare=0)))
 
 
 class TestColumnToString(unittest.TestCase):
@@ -121,6 +128,22 @@ class TestRecordIsEqual(unittest.TestCase):
 
         self.assertTrue(a_record.is_equal(another_record, mode='slow'))
 
+    def test_record_is_equal_slow_ignore_different_column(self):
+        columns = [Column(name="name", value="TEST", is_used_for_compare=0),
+                   Column(name="street", value="somewhere in Zurich"),
+                   Column(name="age", value="10")]
+
+        a_record = Record(record_id="1", columns=columns)
+
+        columns = [Column(name="name", value="NOTATEST", is_used_for_compare=0),
+                   Column(name="street", value="somewhere in Zurich"),
+                   Column(name="age", value="10")]
+
+        another_record = Record(record_id="2", columns=columns)
+
+        self.assertTrue(a_record.is_equal(another_record, mode='slow'))
+        self.assertTrue(another_record.is_equal(a_record, mode='slow'))
+
     def test_record_is_equal_fast(self):
         columns = [Column(name="name", value="TEST"),
                    Column(name="street", value="somewhere in Zurich"),
@@ -130,6 +153,23 @@ class TestRecordIsEqual(unittest.TestCase):
         another_record = Record(record_id="2", columns=columns)
 
         self.assertTrue(a_record.is_equal(another_record, mode='fast'))
+
+    def test_record_is_equal_fast_ignore_different_column(self):
+        """In fast mode the column values are ignore and only the hash is used"""
+        columns = [Column(name="name", value="TEST", is_used_for_compare=0),
+                   Column(name="street", value="somewhere in Zurich"),
+                   Column(name="age", value="10")]
+
+        a_record = Record(record_id="1", columns=columns)
+
+        columns = [Column(name="name", value="NOTATEST", is_used_for_compare=0),
+                   Column(name="street", value="somewhere in Zurich"),
+                   Column(name="age", value="10")]
+
+        another_record = Record(record_id="2", columns=columns)
+
+        self.assertTrue(a_record.is_equal(another_record, mode='fast'))
+        self.assertTrue(another_record.is_equal(a_record, mode='fast'))
 
     def test_record_is_equal_force_no_hash(self):
         columns = [Column(name="name", value="TEST"),

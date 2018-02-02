@@ -81,7 +81,7 @@ class Report(object):
         file_out = open(self.file_name, 'w')
 
         # Write headers (business column) with the separator
-        columns_for_writing = [self.columns_mapping[col] for col in self.columns]
+        columns_for_writing = [self.columns_mapping[col]["business_name"] for col in self.columns]
         columns_for_writing.append('crud type')
         file_out.write(self.separator.join(columns_for_writing)+'\n')
 
@@ -138,14 +138,24 @@ class Execution(object):
 
 class Column(object):
     """Column class holds the name and value of a column which belongs to a record"""
-    def __init__(self, name, value):
+    def __init__(self, name, value, is_used_for_compare=True):
         super(Column, self).__init__()
         self.name = name
         self.value = value
+        self.is_used_for_compare = is_used_for_compare
 
     def is_equal(self, a_column):
         """Assert if column a equals column b based on value"""
-        return self.value == a_column.value
+        is_col_equal = False
+
+        if self.is_used_for_compare != a_column.is_used_for_compare:
+            raise ValueError
+
+        if self.is_used_for_compare:
+            is_col_equal = self.value == a_column.value
+        else:
+            is_col_equal = True
+        return is_col_equal
 
     def to_string(self):
         """Return a string representation of a column"""
@@ -204,7 +214,7 @@ class Record(object):
         column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
 
         string_to_hash = ''.join([column.value for column in column_sorted_by_name
-                                  if column.name != id]
+                                  if column.name != id and column.is_used_for_compare == 1]
                                  )
 
         self.record_hash = hashlib.md5(string_to_hash).hexdigest()
