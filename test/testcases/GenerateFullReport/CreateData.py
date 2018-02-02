@@ -3,7 +3,7 @@ from faker import Faker
 from dateutil.relativedelta import relativedelta
 import datetime
 
-db = dataset.connect('sqlite:////Users/manu/Documents/Reporting_Framework/test/data.db')
+db = dataset.connect('sqlite:////Users/manu/Documents/ReportingFramework/test/data.db')
 
 table = db['customer']
 

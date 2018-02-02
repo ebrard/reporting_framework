@@ -1,5 +1,5 @@
-file_report = "/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report_2.csv"
-file_status = "/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/file_status.dat"
+file_report = "/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report_2.csv"
+file_status = "/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/file_status.dat"
 
 f_r = open(file_report, 'r')
 f_s = open(file_status, 'r')

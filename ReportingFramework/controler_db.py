@@ -96,7 +96,7 @@ def get_records_by_execution_id(execution_id, conn):
     cursor = conn.cursor()
 
     sql_records_by_execution_id = "select id, business_key, execution_id, record_hash, record_type from Record where " \
-                                  "execution_id = '%s' and record_type = 'source'"
+                                  "execution_id = '%s' and record_type in ('source', 'generated') "
 
     # SQL Records
     query_result = cursor.execute(sql_records_by_execution_id % execution_id).fetchall()
@@ -121,21 +121,38 @@ def get_records_by_execution_id(execution_id, conn):
     return records
 
 
-def get_execution_by_report_id(report_id, conn):
+def get_execution_by_report_id(report_id, conn, execution_id=None):
     """This function returns a single instance of Execution for a specific report"""
     cursor = conn.cursor()
     execution = []
 
-    sql_execution_by_report_id = "select id, execution_date, execution_mode from Execution where " \
-                                 "report_id = '%s' order by id desc limit 1"
+    if not execution_id:
+        sql_execution_by_report_id = "select id, execution_date, execution_mode from Execution where " \
+                                     "report_id = '%s' order by id desc limit 1"
+    else:
+        sql_execution_by_report_id = "select id, execution_date, execution_mode from Execution where " \
+                                     "report_id = '%s' and Execution.id = %s limit 1"
 
     # Fetch report information from persistence
-    query_result = cursor.execute(sql_execution_by_report_id % report_id).fetchone()
+    if not execution_id:
+        query_result = cursor.execute(sql_execution_by_report_id % report_id).fetchone()
+    else:
+        query_result = cursor.execute(sql_execution_by_report_id % (report_id, execution_id)).fetchone()
 
     if query_result:
         execution_id = query_result["id"]
         records = get_records_by_execution_id(execution_id, conn)
-        execution = [Execution(parser.parse(query_result["execution_date"]), query_result["execution_mode"], records)]
+        source_record = [a_record for a_record in records if a_record.record_type == 'source']
+        generated_record = [a_record for a_record in records if a_record.record_type == 'generated']
+
+        this_execution = Execution(parser.parse(query_result["execution_date"]),
+                                   query_result["execution_mode"],
+                                   source_record)
+
+        this_execution.generated_records = generated_record
+
+        execution = [this_execution]
+
 
     if execution is None:
         print("Warning: no execution found for report id " + str(report_id))
@@ -143,7 +160,7 @@ def get_execution_by_report_id(report_id, conn):
     return execution
 
 
-def get_report_by_name(report_name, conn):
+def get_report_by_name(report_name, conn, execution_id=None):
     cursor = conn.cursor()
 
     sql_report_by_name = "select id, name, report_query, mode, file_name, separator from Report where name = '%s';"
@@ -184,15 +201,39 @@ def get_report_by_name(report_name, conn):
                     report_file_name,
                     report_id)
 
-    # Retrieve last Execution
-    execution = get_execution_by_report_id(report_id, conn)
+    # Retrieve last Execution or the one requested bw user
+    if not execution_id:
+        execution = get_execution_by_report_id(report_id, conn)
+    else:
+        execution = get_execution_by_report_id(report_id, conn, execution_id)
+
     if execution:
         report.execution = execution
     else:
+        print "Warning : empty exectution"
         report.execution = []
 
     print "Info : Retrieval done "+now()
     return report
+
+
+def get_report_past_execution(report_name, conn):
+    """
+
+    :param report_name:
+    :param conn:
+    :return: [ {} ]
+    """
+
+    sql_get_report_past_execution = "SELECT Report.id as report_id, name, " \
+                                    " Execution.id as execution_id, execution_date FROM " \
+                                    " Report inner join Execution on report.id = execution.report_id" \
+                                    " where Report.name = '%s'"
+    cursor = conn.cursor()
+    query_result = cursor.execute(sql_get_report_past_execution % report_name).fetchall()
+
+    return query_result
+
 
 # Persist functions
 

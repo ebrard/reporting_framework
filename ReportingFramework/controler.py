@@ -28,7 +28,7 @@ def parse_query_result(query_result, this_execution, columns):
 
 
 def generate_business_columns(record, columns_mapping):
-    """Generates columns mapping dictionary"""
+    """Generates columns mapping dictionary by changing column name in the Column object"""
     for column in record.columns:
         if column.name in columns_mapping:
             column.name = columns_mapping[column.name]

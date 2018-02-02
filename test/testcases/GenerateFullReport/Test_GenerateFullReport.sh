@@ -7,9 +7,9 @@ function exit_on_error {
     fi
 }
 
-root_path="/Users/manu/Documents/Reporting_Framework"
+root_path="/Users/manu/Documents/ReportingFramework/"
 test_path="${root_path}/test/testcases/GenerateFullReport/"
-db_path="/Users/manu/Documents/Reporting_Framework/test"
+db_path="/Users/manu/Documents/ReportingFramework/test"
 
 echo "Creating report in the backend database"
 sqlite3 ${root_path}/db/backend.db < ${test_path}/CreateReport.sql
@@ -26,5 +26,5 @@ python3 ${test_path}/CreateData.py
 exit_on_error
 
 echo "Running Report in full mode"
-python ${root_path}/reporting_framework.py execute --name test --mode full
+python ${root_path}/ReportingFramework/reporting_framework.py execute --name test --mode full
 exit_on_error

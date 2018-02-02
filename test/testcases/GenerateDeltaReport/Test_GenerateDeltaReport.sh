@@ -7,11 +7,11 @@ function exit_on_error {
     fi
 }
 
-root_path="/Users/manu/Documents/Reporting_Framework"
+root_path="/Users/manu/Documents/ReportingFramework"
 test_path="${root_path}/test/testcases/GenerateDeltaReport/"
-db_path="/Users/manu/Documents/Reporting_Framework/test"
+db_path="/Users/manu/Documents/ReportingFramework/test"
 
-nb_records=2000
+nb_records=10
 nb_cycle=1
 
 echo "Creating report in the backend database"
@@ -29,22 +29,22 @@ for i in {1..${nb_cycle}}
 do
 
 	echo "Running Report in delta mode"
-	time python ${root_path}/reporting_framework.py execute --name test --mode delta
+	time python ${root_path}/ReportingFramework/reporting_framework.py execute --name test --mode delta
 	exit_on_error
 
-	mv /Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report.csv \
-	/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report_1.csv
+	mv /Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report.csv \
+	/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report_1.csv
 
     echo "Modify data in the source database"
 	python3 ${test_path}/CreateOrModifyData.py modify ${nb_records}
 	exit_on_error
 
 	echo "Running Report in delta mode"
-	time python ${root_path}/reporting_framework.py execute --name test --mode delta
+	time python ${root_path}/ReportingFramework/reporting_framework.py execute --name test --mode delta
 	exit_on_error
 
-	mv /Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report.csv \
-	/Users/manu/Documents/Reporting_Framework/test/testcases/GenerateDeltaReport/report_2.csv
+	mv /Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report.csv \
+	/Users/manu/Documents/ReportingFramework/test/testcases/GenerateDeltaReport/report_2.csv
 
 	echo "Checking report content after data change"
 	python CheckResults.py
