@@ -18,7 +18,7 @@ create table Report_Columns (
     report_id int,
     sql_name varchar(300) not null,
     business_name varchar(300),
-    business_key int check(business_key in (0,1)) default 0 not null,
+    is_business_key int check(is_business_key in (0,1)) default 0 not null,
     is_used_for_compare int check (is_used_for_compare in (0,1)) default 1 not null,
     FOREIGN KEY(report_id) REFERENCES Report(id)
 ) ;
