@@ -8,7 +8,7 @@ function exit_on_error {
 }
 
 root_path="/Users/manu/Documents/ReportingFramework"
-test_path="${root_path}/test/testcases/GenerateDeltaReport/"
+test_path="${root_path}/test/testcases/GenerateDeltaReport/WithoutColExclusion"
 db_path="/Users/manu/Documents/ReportingFramework/test"
 
 nb_records=10
@@ -53,6 +53,6 @@ do
 sleep 5
 done
 
-rm -f created.pickle
+rm -f ../created.pickle
 rm -f file_status.dat
 rm -f report*.csv

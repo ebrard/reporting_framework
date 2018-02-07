@@ -69,6 +69,7 @@ if str(sys.argv[1]) == "modify":
                                   age=age,
                                   birthdate=birth_date)
                 table.update(faked_data, ["id"])
+                print("Customer with id " + str(i))
 
             if 20 <= dice <= 80:
                 file_status.write(str(i) + " S\n")
