@@ -138,7 +138,7 @@ class Execution(object):
 
 class Column(object):
     """Column class holds the name and value of a column which belongs to a record"""
-    def __init__(self, name, value, is_used_for_compare=True):
+    def __init__(self, name, value, is_used_for_compare='1'):
         super(Column, self).__init__()
         self.name = name
         self.value = value
