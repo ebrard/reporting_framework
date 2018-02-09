@@ -13,20 +13,60 @@ from model import Record
 def parse_query_result(query_result, this_execution, columns, columns_mapping):
     """Reads and parses data source query result and add it to
     existing execution instance"""
-    i = 0
+
+    columns_in_business_key = []
+
+    for column_name, column_definition in columns_mapping.items():
+        if "is_business_key" in column_definition:
+            if column_definition["is_business_key"] == '1':
+                columns_in_business_key.append(str(column_name))
+
     for row in query_result:
-        this_record = Record(row[0])
+        # Construct the business key (record.id)
+        # this_record = Record(row[0])
+
+        # New method
+        business_key = []
+        for a_column in columns_in_business_key:
+            business_key.append((a_column, row[a_column]))
+
+        business_key.sort(key=lambda column_tuple: column_tuple[0])
+        record_id = [column_tuple[1] for column_tuple in business_key]
+        if len(record_id) == 1:
+            record_id = str(record_id[0])
+        else:
+            record_id = ''.join(record_id)
+
+        this_record = Record(record_id=record_id)
+
+        # End of new method for business key
         this_record.record_type = 'source'  # This record was read from a report query
-        j = 0
-        for column in row:
-            this_column = Column(columns[j],
-                                 str(column), # We handle only string value type
-                                 columns_mapping[columns[j]]["is_used_for_compare"])
+
+        # This approach is independent of the column order in the SQL defined
+        # in the report configuration
+        for a_column in columns:
+            a_column = str(a_column)
+
+            this_column = Column(a_column,
+                                 str(row[a_column]),
+                                 columns_mapping[a_column]["is_used_for_compare"]
+                                 )
+
             this_record.columns.append(this_column)
-            j += 1
+
         this_record.hash_record()
         this_execution.add_record(this_record)
-        i += 1
+
+        # j = 0
+        # for column in row:
+        #     this_column = Column(columns[j],
+        #                          str(column), # We handle only string value type
+        #                          columns_mapping[columns[j]]["is_used_for_compare"])
+        #     this_record.columns.append(this_column)
+        #     j += 1
+        # this_record.hash_record()
+        # this_execution.add_record(this_record)
+        # i += 1
 
 
 def generate_business_columns(record, columns_mapping):
@@ -54,7 +94,7 @@ def generate_delta(report):
                     current_row = last_report.get_record_with_id(str(row.id))
                     previous_row = last_report_1.get_record_with_id(str(row.id))
 
-                    if not current_row.is_equal(previous_row, mode='fast'):
+                    if not current_row.is_equal(previous_row, mode='slow'):
                         generated_row = copy.deepcopy(row)
                         generated_row.append_column("crud type", "U")
                         generated_row.record_type = 'generated'

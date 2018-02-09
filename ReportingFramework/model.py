@@ -138,7 +138,7 @@ class Execution(object):
 
 class Column(object):
     """Column class holds the name and value of a column which belongs to a record"""
-    def __init__(self, name, value, is_used_for_compare=True):
+    def __init__(self, name, value, is_used_for_compare='1'):
         super(Column, self).__init__()
         self.name = name
         self.value = value
@@ -151,10 +151,11 @@ class Column(object):
         if self.is_used_for_compare != a_column.is_used_for_compare:
             raise ValueError
 
-        if self.is_used_for_compare:
+        if self.is_used_for_compare == '1':
             is_col_equal = self.value == a_column.value
         else:
             is_col_equal = True
+            print "Warning : "+self.name+" excluded for comparison"
         return is_col_equal
 
     def to_string(self):
@@ -214,7 +215,7 @@ class Record(object):
         column_sorted_by_name = sorted(self.columns, key=lambda l: l.name)
 
         string_to_hash = ''.join([column.value for column in column_sorted_by_name
-                                  if column.name != id and column.is_used_for_compare == 1]
+                                  if column.name != id and column.is_used_for_compare == '1']
                                  )
 
         self.record_hash = hashlib.md5(string_to_hash).hexdigest()

@@ -8,7 +8,7 @@ function exit_on_error {
 }
 
 root_path="/Users/manu/Documents/ReportingFramework"
-test_path="${root_path}/test/testcases/GenerateDeltaReport/WithoutColExclusion"
+test_path="${root_path}/test/testcases/GenerateDeltaReport/WithCompositeBusinessKey"
 db_path="/Users/manu/Documents/ReportingFramework/test"
 
 nb_records=10

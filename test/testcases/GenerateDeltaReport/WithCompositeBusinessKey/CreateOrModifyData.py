@@ -48,31 +48,28 @@ if str(sys.argv[1]) == "modify":
         initial_data = pickle.load(f_created)
 
         for i in range(0, nb_customers):
+            record_key = initial_data[str(i)]["first_name"]+initial_data[str(i)]["last_name"]
 
             dice = random.randint(0, 100)
 
             if dice < 20:
                 # delete
-                file_status.write(str(i) + " D\n")
+                file_status.write(record_key + " D\n")
 
                 db.query('delete from customer where id = %s' % i)
 
             if dice > 80:
                 # Update
-                file_status.write(str(i) + " U\n")
                 birth_date = fake.date_between(start_date="-60y", end_date="today")
                 age = relativedelta(datetime.datetime.now(), birth_date).years
 
-                faked_data = dict(id=i,
-                                  first_name=fake.first_name(),
-                                  last_name=fake.last_name(),
-                                  age=age,
-                                  birthdate=birth_date)
-                table.update(faked_data, ["id"])
+                db.query('update customer set age = %i where id = %s' % (age, i))
+
+                file_status.write(record_key + " U\n")
                 print("Customer with id " + str(i))
 
             if 20 <= dice <= 80:
-                file_status.write(str(i) + " S\n")
+                file_status.write(record_key + " S\n")
 
         db.commit()
         file_status.close()

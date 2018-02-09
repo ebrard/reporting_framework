@@ -77,12 +77,15 @@ def get_columns_by_record_id(record_id, conn):
 
     cursor = conn.cursor()
 
-    sql_columns_by_record_id = "select name, value from Column where record_id = '%s';"
+    sql_columns_by_record_id = "select name, value, is_used_for_compare from Column where record_id = '%s';"
 
     query_result = cursor.execute(sql_columns_by_record_id % record_id).fetchall()
 
     for row in query_result:
-        columns.append(Column(row["name"], str(row["value"])))
+        columns.append(Column(row["name"],
+                              str(row["value"]),
+                              str(row["is_used_for_compare"]))
+                       )
 
     return columns
 
@@ -163,7 +166,7 @@ def get_report_by_name(report_name, conn, execution_id=None):
     cursor = conn.cursor()
 
     sql_report_by_name = "select id, name, report_query, mode, file_name, separator from Report where name = '%s';"
-    sql_report_columns_by_id = "select sql_name, business_name, is_used_for_compare " \
+    sql_report_columns_by_id = "select sql_name, business_name, is_used_for_compare, is_business_key " \
                                "from Report_Columns where report_id = '%s';"
 
     # Fetch report information from persistence
@@ -192,6 +195,7 @@ def get_report_by_name(report_name, conn, execution_id=None):
         columns.append(row["sql_name"])
         columns_mapping[row["sql_name"]] = {"business_name": row["business_name"]}
         columns_mapping[row["sql_name"]]["is_used_for_compare"] = str(row["is_used_for_compare"])
+        columns_mapping[row["sql_name"]]["is_business_key"] = str(row["is_business_key"])
 
     report = Report(report_name,
                     report_query,
@@ -242,10 +246,10 @@ def get_report_past_execution(report_name, conn):
 def persist_columns(columns, record_id, conn):
     """Persist a list of columns to the storage"""
 
-    sql_persist_columns = "insert into Column(record_id, name, value) values (?, ?, ?)"
+    sql_persist_columns = "insert into Column(record_id, name, value, is_used_for_compare) values (?, ?, ?, ?)"
     cursor = conn.cursor()
 
-    list_of_columns_tuples = [(record_id, col.name, col.value) for col in columns]
+    list_of_columns_tuples = [(record_id, col.name, col.value, col.is_used_for_compare) for col in columns]
 
     cursor.executemany(sql_persist_columns, list_of_columns_tuples)
     conn.commit()
