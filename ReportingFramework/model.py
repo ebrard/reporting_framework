@@ -151,7 +151,7 @@ class Column(object):
         if self.is_used_for_compare != a_column.is_used_for_compare:
             raise ValueError
 
-        if self.is_used_for_compare:
+        if self.is_used_for_compare == '1':
             is_col_equal = self.value == a_column.value
         else:
             is_col_equal = True
