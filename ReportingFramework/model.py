@@ -78,19 +78,17 @@ class Report(object):
 
     def write_to_file(self):
         """Write the last execution to file on disk"""
-        file_out = open(self.file_name, 'w')
 
-        # Write headers (business column) with the separator
-        columns_for_writing = [self.columns_mapping[col]["business_name"] for col in self.columns]
-        columns_for_writing.append('crud type')
-        file_out.write(self.separator.join(columns_for_writing)+'\n')
+        with open(self.file_name, 'w') as file_out:
+            # Write headers (business column) with the separator
+            columns_for_writing = [self.columns_mapping[col]["business_name"] for col in self.columns]
+            columns_for_writing.append('crud type')
+            file_out.write(self.separator.join(columns_for_writing)+'\n')
 
-        # Write data with the separator
-        print "Info : Writing last execution to " + self.file_name
-        for row in self.execution[-1].generated_records:
-            file_out.write(row.to_string(self.separator)+'\n')
-
-        file_out.close()
+            # Write data with the separator
+            print "Info : Writing last execution to " + self.file_name
+            for row in self.execution[-1].generated_records:
+                file_out.write(row.to_string(self.separator)+'\n')
 
 
 class Execution(object):
