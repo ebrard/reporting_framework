@@ -180,21 +180,18 @@ class Record(object):
 
         if mode == 'slow' or (self.record_hash == '' and a_record.record_hash == ''):
             for column in self.columns:
-                for a_record_column in a_record.columns:
-                    if a_record_column.name == column.name:
-                        if not a_record_column.is_equal(column):
-                            is_equals = False
-                            # print("Info : Record with id: "
-                            #      + str(self.id)
-                            #      + " "
-                            #      + column.name
-                            #      + " changed value from "
-                            #      + a_record_column.value
-                            #      + " to "
-                            #      + column.value)
+
+                # Try to find corresponding column in another_record
+                column_to_compare_with = a_record.get_column_by_name(column.name)
+
+                if column_to_compare_with:
+                    is_equals = column.is_equal(column_to_compare_with)
+                else:
+                    print("Warning : Missing column %s in reference dataset" % column.name)
+                    is_equals = False
+
         else:
-            if self.record_hash != a_record.record_hash:
-                is_equals = False
+            is_equals = (self.record_hash == a_record.record_hash)
 
         return is_equals
 
@@ -221,3 +218,14 @@ class Record(object):
     def append_column(self, name, value):
         """Add a column to an existing record (append at the end)"""
         self.columns.append(Column(name, value))
+
+    def get_column_by_name(self, name):
+        """Return a column of a record by column name"""
+        is_found = False
+        requested_column = None
+        for column in self.columns:
+            if column.name == name:
+                is_found = True
+                requested_column = column
+
+        return requested_column

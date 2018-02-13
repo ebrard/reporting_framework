@@ -76,7 +76,7 @@ def generate_business_columns(record, columns_mapping):
             column.name = columns_mapping[column.name]["business_name"]
 
 
-def generate_delta(report):
+def generate_delta(report, mode="slow"):
     """Generate delta report between current and previous data source state"""
     print "Info : Starting comparing records "+datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     last_report, last_report_1 = report.get_last_report_pairs()
@@ -94,7 +94,7 @@ def generate_delta(report):
                     current_row = last_report.get_record_with_id(str(row.id))
                     previous_row = last_report_1.get_record_with_id(str(row.id))
 
-                    if not current_row.is_equal(previous_row, mode='slow'):
+                    if not current_row.is_equal(previous_row, mode=mode):
                         generated_row = copy.deepcopy(row)
                         generated_row.append_column("crud type", "U")
                         generated_row.record_type = 'generated'
