@@ -50,6 +50,25 @@ def get_report_by_name(report_name):
     )
 
 
+@app.route('/executions/<string:report_name>', methods=['GET'])
+def get_executions_for_report(report_name):
+    executions = None
+
+    with sqlite3.connect(backend_db_file) as conn:
+        conn.row_factory = sqlite3.Row
+        executions = ctrl_db.get_report_past_execution(report_name, conn)
+
+    return jsonify(
+        {"report_name": report_name},
+        [
+          {
+              "execution_id": an_execution["execution_id"],
+              "execution_date": an_execution["execution_date"],
+              "number_of_records": an_execution["records_nb"]
+          } for an_execution in executions]
+    )
+
+
 @app.route('/executions', methods=['POST'])
 def execute_report_sync():
 
@@ -100,7 +119,13 @@ def execute_report_sync():
         # Write report data to file
         this_report.write_to_file()
 
-        return jsonify("Execution done "+this_report.file_name+" has been written.")
+        return jsonify(
+            "Execution done at "
+            + datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            + " "
+            + this_report.file_name
+            + " has been written."
+        )
 
 
 if __name__ == '__main__':

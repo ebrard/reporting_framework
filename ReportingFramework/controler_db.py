@@ -230,10 +230,14 @@ def get_report_past_execution(report_name, conn):
     :return: [ {} ]
     """
 
-    sql_get_report_past_execution = "SELECT Report.id as report_id, name, " \
-                                    " Execution.id as execution_id, execution_date FROM " \
-                                    " Report inner join Execution on report.id = execution.report_id" \
+    sql_get_report_past_execution = " SELECT Report.id as report_id, name, " \
+                                    " Execution.id as execution_id, execution_date, " \
+                                    " (select count(*) from Record " \
+                                    " where Record.execution_id = Execution.id " \
+                                    " and record_type = 'generated') as records_nb" \
+                                    " FROM Report inner join Execution on report.id = execution.report_id" \
                                     " where Report.name = '%s'"
+
     cursor = conn.cursor()
     query_result = cursor.execute(sql_get_report_past_execution % report_name).fetchall()
 
