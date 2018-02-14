@@ -52,7 +52,6 @@ def get_report_by_name(report_name):
 
 @app.route('/executions/<string:report_name>', methods=['GET'])
 def get_executions_for_report(report_name):
-    executions = None
 
     with sqlite3.connect(backend_db_file) as conn:
         conn.row_factory = sqlite3.Row
