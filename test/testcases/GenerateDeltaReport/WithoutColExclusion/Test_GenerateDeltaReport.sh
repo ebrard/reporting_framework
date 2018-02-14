@@ -11,8 +11,8 @@ root_path="/Users/manu/Documents/ReportingFramework"
 test_path="${root_path}/test/testcases/GenerateDeltaReport/WithoutColExclusion"
 db_path="/Users/manu/Documents/ReportingFramework/test"
 
-nb_records=10
-nb_cycle=1
+nb_records=1000
+nb_cycle=3
 
 echo "Creating report in the backend database"
 sqlite3 ${root_path}/db/backend.db < ${test_path}/CreateReport.sql
