@@ -11,6 +11,34 @@ from model import Execution
 from model import Record
 from model import Column
 
+# Source database
+
+
+def get_source_connection():
+    """
+    Get a connection to the source database
+
+    :return: connection
+    """
+    conn_source = sqlite3.connect('/Users/manu/Documents/ReportingFramework/test/data.db')
+    conn_source.row_factory = sqlite3.Row
+
+    return conn_source
+
+# Persistence storage function
+
+
+def get_backend_connection():
+    """
+    Get a connection to the backend database
+
+    :return: connection
+    """
+    conn_source = sqlite3.connect('/Users/manu/Documents/ReportingFramework/db/backend.db')
+    conn_source.row_factory = sqlite3.Row
+
+    return conn_source
+
 # Read function
 
 

@@ -8,6 +8,8 @@ import copy
 import datetime
 from model import Column
 from model import Record
+from model import Execution
+import controler_db as ctrl_persist
 
 
 def parse_query_result(query_result, this_execution, columns, columns_mapping):
@@ -147,3 +149,58 @@ def generate_full(report):
         generated_row = copy.deepcopy(row)
         generated_row.record_type = 'generated'
         last_report.generated_records.append(generated_row)
+
+
+def run_an_execution(report_name, execution_mode):
+    """
+    Run an execution of a report in a specified mode
+
+    :param report_name:
+    :param execution_mode:
+    :return:
+    """
+
+    with ctrl_persist.get_backend_connection() as conn:
+        # Retrieve report
+        this_report = ctrl_persist.get_report_by_name(report_name, conn)
+        # Instantiate an execution
+
+        if not execution_mode:
+            execution_mode = this_report.mode
+        else:
+            this_report.mode = execution_mode
+
+        query_result = None
+        execution = None
+
+        # Connect to data database
+        with ctrl_persist.get_source_connection() as conn_source:
+            cur_source = conn_source.cursor()
+
+            # Run report query on this database
+            execution = Execution(datetime.datetime.now(), execution_mode)
+            query_result = cur_source.execute(this_report.query).fetchall()
+
+        # Parse query result
+        # Associate parsed data with the execution
+        parse_query_result(query_result, execution, this_report.columns, this_report.columns_mapping)
+        this_report.execution.append(execution)  # Add report execution to the report
+
+        # Close connection to data database
+        conn_source.close()
+
+        # Generate delta or full
+        if this_report.mode == 'delta':
+            generate_delta(this_report)
+        else:
+            generate_full(this_report)
+
+        # Write data to backend db
+        ctrl_persist.persist_execution(execution, this_report.get_id(), conn)
+
+        # Write report data to file
+        this_report.write_to_file()
+
+        return {
+            "file_name":this_report.file_name
+        }
